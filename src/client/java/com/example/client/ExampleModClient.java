@@ -1,77 +1,64 @@
 package com.example.client;
 
+import com.mojang.blaze3d.platform.Window;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.loader.api.FabricLoader;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.TitleScreen;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.Identifier;
+import net.minecraft.ChatFormatting;
 
 public class ExampleModClient implements ClientModInitializer {
-	private static final String MOD_ID = "modid";
-	private static final Text MAIN_MENU_LABEL = Text.empty()
-		.append(Text.literal("Valorate").formatted(Formatting.YELLOW))
-		.append(Text.literal(" "))
-		.append(Text.literal("client").formatted(Formatting.AQUA))
-		.append(Text.literal(" by "))
-		.append(Text.literal("Chris").formatted(Formatting.LIGHT_PURPLE))
-		.append(Text.literal(" & "))
-		.append(Text.literal("Maxi").formatted(Formatting.LIGHT_PURPLE));
+    private static final String MOD_ID = "modid";
 
-	private static int currentFps;
+    private static final Component MAIN_MENU_LABEL = Component.empty()
+            .append(Component.literal("Valorate").withStyle(ChatFormatting.YELLOW))
+            .append(Component.literal(" "))
+            .append(Component.literal("client").withStyle(ChatFormatting.AQUA))
+            .append(Component.literal(" by "))
+            .append(Component.literal("Chris").withStyle(ChatFormatting.LIGHT_PURPLE))
+            .append(Component.literal(" & "))
+            .append(Component.literal("Maxi").withStyle(ChatFormatting.LIGHT_PURPLE));
 
-	@Override
-	public void onInitializeClient() {
-		ClientTickEvents.END_CLIENT_TICK.register(client -> currentFps = MinecraftClient.getCurrentFps());
+    @Override
+    public void onInitializeClient() {
+        HudElementRegistry.attachElementBefore(
+                VanillaHudElements.CHAT,
+                Identifier.fromNamespaceAndPath(MOD_ID, "valorate_watermark"),
+                ExampleModClient::renderInGameWatermark
+        );
+    }
 
-		ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
-			if (!(screen instanceof TitleScreen)) {
-				return;
-			}
+    private static void renderInGameWatermark(GuiGraphicsExtractor extractor, net.minecraft.client.DeltaTracker tickCounter) {
+        Minecraft client = Minecraft.getInstance();
 
-			ScreenEvents.afterRender(screen).register(this::renderMainMenuLabel);
-		});
+        if (client.player == null || client.options.hideGui) {
+            return;
+        }
 
-		HudRenderCallback.EVENT.register((drawContext, tickCounter) -> {
-			MinecraftClient client = MinecraftClient.getInstance();
-			if (client.player == null || client.options.hudHidden) {
-				return;
-			}
+        MutableComponent watermarkText = Component.empty()
+                .append(Component.literal("Valorate").withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal(" "))
+                .append(Component.literal("[v" + resolveModVersion() + "]"));
 
-			renderInGameWatermark(drawContext, client);
-		});
-	}
+        Window window = client.getWindow();
 
-	private void renderMainMenuLabel(net.minecraft.client.gui.screen.Screen screen, DrawContext drawContext, int mouseX, int mouseY, float tickDelta) {
-		int textWidth = screen.getTextRenderer().getWidth(MAIN_MENU_LABEL);
-		int x = screen.width - textWidth - 8;
-		int y = 8;
-		drawContext.drawTextWithShadow(screen.getTextRenderer(), MAIN_MENU_LABEL, x, y, 0xFFFFFFFF);
-	}
+        int textWidth = client.font.width(watermarkText);
+        int x = window.getGuiScaledWidth() - textWidth - 8;
+        int y = 8;
 
-	private void renderInGameWatermark(DrawContext drawContext, MinecraftClient client) {
-		Text versionText = Text.literal("[v" + resolveModVersion() + "]");
-		Text watermarkText = Text.empty()
-			.append(Text.literal("Valorate").formatted(Formatting.YELLOW))
-			.append(Text.literal(" "))
-			.append(versionText);
+        extractor.text(client.font, watermarkText, x, y, 0xFFFFFFFF, true);
+        extractor.text(client.font, "FPS: " + client.getFps(), x, y + 12, 0xFFFFFFFF, true);
+    }
 
-		int textWidth = client.textRenderer.getWidth(watermarkText);
-		int x = drawContext.getScaledWindowWidth() - textWidth - 8;
-		int y = 8;
-
-		drawContext.drawTextWithShadow(client.textRenderer, watermarkText, x, y, 0xFFFFFFFF);
-		drawContext.drawTextWithShadow(client.textRenderer, Text.literal("FPS: " + currentFps), x, y + 12, 0xFFFFFFFF);
-	}
-
-	private String resolveModVersion() {
-		return FabricLoader.getInstance()
-			.getModContainer(MOD_ID)
-			.map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
-			.orElse("1");
-	}
+    private static String resolveModVersion() {
+        return FabricLoader.getInstance()
+                .getModContainer(MOD_ID)
+                .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
+                .orElse("1");
+    }
 }
