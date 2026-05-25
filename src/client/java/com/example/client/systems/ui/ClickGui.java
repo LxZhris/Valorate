@@ -11,26 +11,34 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
 
+
+
 import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+
 public class ClickGui extends Screen {
-    private final Map<Category, Panel> panels = new HashMap<>();
+    private static final Map<Category, Panel> panels = new HashMap<>();
     private final Map<Module, Boolean> moduleOpen = new HashMap<>();
 
     private Panel draggingPanel;
     private int dragOffsetX;
     private int dragOffsetY;
 
+    private boolean leftWasDown;
+    private boolean rightWasDown;
+
     public ClickGui() {
         super(Component.literal("Valorate ClickGUI"));
 
-        int startX = 20;
+        if (panels.isEmpty()) {
+            int startX = 20;
 
-        for (Category category : Category.values()) {
-            panels.put(category, new Panel(category, startX, 25));
-            startX += 105;
+            for (Category category : Category.values()) {
+                panels.put(category, new Panel(category, startX, 25));
+                startX += 105;
+            }
         }
     }
 
@@ -38,10 +46,22 @@ public class ClickGui extends Screen {
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         Minecraft client = Minecraft.getInstance();
 
-        boolean leftDown = GLFW.glfwGetMouseButton(
+        boolean leftDown = GLFW.glfwGetMouseButton(GLFW.glfwGetCurrentContext(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
+        boolean rightDown = GLFW.glfwGetMouseButton(
                 GLFW.glfwGetCurrentContext(),
-                GLFW.GLFW_MOUSE_BUTTON_LEFT
+                GLFW.GLFW_MOUSE_BUTTON_RIGHT
         ) == GLFW.GLFW_PRESS;
+
+        if (leftDown && !leftWasDown) {
+            handleClick(mouseX, mouseY, 0);
+        }
+
+        if (rightDown && !rightWasDown) {
+            handleClick(mouseX, mouseY, 1);
+        }
+
+        leftWasDown = leftDown;
+        rightWasDown = rightDown;
 
         if (leftDown && draggingPanel != null) {
             draggingPanel.x = mouseX - dragOffsetX;
@@ -138,7 +158,7 @@ public class ClickGui extends Screen {
         }
     }
 
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    private boolean handleClick(double mouseX, double mouseY, int button) {
         for (Panel panel : panels.values()) {
             if (isInside(mouseX, mouseY, panel.x, panel.y, panel.width, 18)) {
                 if (button == 0) {
@@ -186,23 +206,6 @@ public class ClickGui extends Screen {
         return true;
     }
 
-    public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
-        if (draggingPanel != null && button == 0) {
-            draggingPanel.x = (int) mouseX - dragOffsetX;
-            draggingPanel.y = (int) mouseY - dragOffsetY;
-        }
-
-        return true;
-    }
-
-    public boolean mouseReleased(double mouseX, double mouseY, int button) {
-        if (button == 0) {
-            draggingPanel = null;
-        }
-
-        return true;
-    }
-
     private int rainbow(int offset) {
         float hue = ((System.currentTimeMillis() + offset) % 6000L) / 6000.0F;
         return Color.HSBtoRGB(hue, 0.85F, 1.0F);
@@ -224,5 +227,32 @@ public class ClickGui extends Screen {
             this.x = x;
             this.y = y;
         }
+    }
+
+
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT
+                || keyCode == GLFW.GLFW_KEY_ESCAPE) {
+
+            Minecraft.getInstance().setScreen(null);
+
+            ConfigManager.save();
+
+            return true;
+        }
+
+        return false;
+    }
+
+
+    public void toggle() {
+        Minecraft client = Minecraft.getInstance();
+
+        if (client.screen instanceof com.example.client.systems.ui.ClickGui) {
+            client.setScreen(null);
+            return;
+        }
+
+        client.setScreen(new com.example.client.systems.ui.ClickGui());
     }
 }

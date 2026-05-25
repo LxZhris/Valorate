@@ -1,6 +1,6 @@
 package com.example.client.systems.modules;
 
-import com.example.client.systems.modules.combat.KillAura.KillAura;
+import com.example.client.systems.modules.movement.Sprint;
 import com.example.client.systems.modules.render.Watermark;
 import com.example.client.systems.modules.render.Licht;
 import com.example.client.systems.modules.render.HUD;
@@ -16,7 +16,8 @@ public class ModuleManager {
     public static final Watermark WATERMARK = new Watermark();
     public static final Licht LICHT = new Licht();
     public static final HUD HUD = new HUD();
-    public static final KillAura KILLAURA = new KillAura();
+    public static final Sprint SPRINT = new Sprint();
+
 
 
 
@@ -24,7 +25,7 @@ public class ModuleManager {
         MODULES.add(LICHT);
         MODULES.add(HUD);
         MODULES.add(CLICK_GUI);
-        MODULES.add(KILLAURA);
+        MODULES.add(SPRINT);
 
     }
 

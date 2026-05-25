@@ -17,6 +17,13 @@ public class ClickGUI extends Module {
 
     @Override
     public void toggle() {
-        Minecraft.getInstance().setScreen(new ClickGui());
+        Minecraft client = Minecraft.getInstance();
+
+        if (client.screen instanceof com.example.client.systems.ui.ClickGui) {
+            client.setScreen(null);
+            return;
+        }
+
+        client.setScreen(new com.example.client.systems.ui.ClickGui());
     }
 }
