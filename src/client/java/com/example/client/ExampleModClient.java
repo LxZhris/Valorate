@@ -1,37 +1,76 @@
 package com.example.client;
 
-import com.mojang.blaze3d.platform.Window;
+import com.example.client.systems.commands.CommandManager;
+import com.example.client.systems.modules.ModuleManager;
+import com.example.client.systems.modules.render.ArraylistRenderer;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.message.v1.ClientSendMessageEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements;
 import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import net.minecraft.ChatFormatting;
+import com.example.client.systems.modules.render.ArraylistRenderer;
+import org.lwjgl.glfw.GLFW;
+import com.example.client.systems.config.ConfigManager;
 
 public class ExampleModClient implements ClientModInitializer {
     private static final String MOD_ID = "modid";
 
-    private static final Component MAIN_MENU_LABEL = Component.empty()
-            .append(Component.literal("Valorate").withStyle(ChatFormatting.YELLOW))
-            .append(Component.literal(" "))
-            .append(Component.literal("client").withStyle(ChatFormatting.AQUA))
-            .append(Component.literal(" by "))
-            .append(Component.literal("Chris").withStyle(ChatFormatting.LIGHT_PURPLE))
-            .append(Component.literal(" & "))
-            .append(Component.literal("Maxi").withStyle(ChatFormatting.LIGHT_PURPLE));
-
     @Override
     public void onInitializeClient() {
+        ModuleManager.init();
+        CommandManager.init();
+        ConfigManager.load();
+
+        ClientSendMessageEvents.ALLOW_CHAT.register(message -> {
+            if (message.startsWith(".")) {
+                CommandManager.execute(message);
+                return false;
+            }
+
+            return true;
+        });
+
+        ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            ModuleManager.LICHT.onTick();
+
+            long window = GLFW.glfwGetCurrentContext();
+
+            for (com.example.client.systems.modules.Module module : ModuleManager.MODULES) {
+                if (module.getKey() == 0) {
+                    continue;
+                }
+
+                boolean pressed = GLFW.glfwGetKey(window, module.getKey()) == GLFW.GLFW_PRESS;
+
+                if (pressed && !module.isKeyPressed()) {
+                    module.toggle();
+                    ConfigManager.save();
+
+                    if (client.player != null) {
+                        client.player.sendSystemMessage(Component.literal(
+                                module.getName() + " " + (module.isEnabled() ? "enabled" : "disabled")
+                        ));
+                    }
+                }
+
+                module.setKeyPressed(pressed);
+            }
+        });
+
         HudElementRegistry.attachElementBefore(
                 VanillaHudElements.CHAT,
                 Identifier.fromNamespaceAndPath(MOD_ID, "valorate_watermark"),
                 ExampleModClient::renderInGameWatermark
         );
     }
+
 
     private static void renderInGameWatermark(GuiGraphicsExtractor extractor, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
@@ -40,20 +79,27 @@ public class ExampleModClient implements ClientModInitializer {
             return;
         }
 
+        ArraylistRenderer.render(extractor);
+
+        if (!ModuleManager.HUD.isWatermark()) {
+            return;
+        }
+
         MutableComponent watermarkText = Component.empty()
-                .append(Component.literal("Valorate").withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal("Valorate")
+                        .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD, ChatFormatting.UNDERLINE))
                 .append(Component.literal(" "))
-                .append(Component.literal("[v" + resolveModVersion() + "]"));
+                .append(Component.literal("[v" + resolveModVersion() + "]")
+                        .withStyle(ChatFormatting.AQUA));
 
-        Window window = client.getWindow();
-
-        int textWidth = client.font.width(watermarkText);
-        int x = window.getGuiScaledWidth() - textWidth - 8;
+        int x = 8;
         int y = 8;
 
         extractor.text(client.font, watermarkText, x, y, 0xFFFFFFFF, true);
-        extractor.text(client.font, "FPS: " + client.getFps(), x, y + 12, 0xFFFFFFFF, true);
+        extractor.text(client.font, "FPS:" + client.getFps(), x, y + 12, 0xFFFFFFFF, true);
     }
+
+
 
     private static String resolveModVersion() {
         return FabricLoader.getInstance()
@@ -61,4 +107,5 @@ public class ExampleModClient implements ClientModInitializer {
                 .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
                 .orElse("1");
     }
+
 }

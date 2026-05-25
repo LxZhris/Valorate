@@ -3,7 +3,7 @@
 	"package": "com.example.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-		"ExampleMixin"
+      "com.example.client.mixin.LevelLoadingScreenMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
