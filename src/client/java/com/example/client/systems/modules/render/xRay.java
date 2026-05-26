@@ -61,13 +61,23 @@ public class xRay extends Module {
 
     @Override
     public void onEnable() {
-        reloadChunks();
+        Minecraft mc = Minecraft.getInstance();
+
+        if (mc.levelRenderer != null) {
+            mc.levelRenderer.allChanged();
+        }
     }
 
     @Override
     public void onDisable() {
-        reloadChunks();
+        Minecraft mc = Minecraft.getInstance();
+
+        if (mc.levelRenderer != null) {
+            mc.levelRenderer.allChanged();
+        }
     }
+
+
 
     public boolean shouldShow(BlockState state) {
         Block block = state.getBlock();

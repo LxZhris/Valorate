@@ -2,11 +2,9 @@ package com.example.client.systems.modules;
 
 import com.example.client.systems.modules.movement.Sprint;
 import com.example.client.systems.modules.movement.Step;
-import com.example.client.systems.modules.render.ClickGUI;
-import com.example.client.systems.modules.render.HUD;
-import com.example.client.systems.modules.render.Licht;
+import com.example.client.systems.modules.render.*;
 import com.example.client.systems.modules.movement.Jesus;
-import com.example.client.systems.modules.render.xRay;
+import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
 import java.util.List;

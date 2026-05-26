@@ -3,8 +3,8 @@
 	"package": "com.example.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
-      "LoadingOverlayMixin"
 	],
+
 	"injectors": {
 		"defaultRequire": 1
 	},
