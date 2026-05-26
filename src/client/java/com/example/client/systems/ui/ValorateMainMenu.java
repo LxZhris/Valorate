@@ -11,6 +11,9 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
 
 public class ValorateMainMenu extends Screen {
 
@@ -252,6 +255,15 @@ public class ValorateMainMenu extends Screen {
             for (MenuButton button : buttons) {
 
                 if (button.isHovered(mouseX, mouseY)) {
+
+                    Minecraft.getInstance().getSoundManager().play(
+                            SimpleSoundInstance.forUI(
+                                    SoundEvents.BONE_BLOCK_BREAK,
+                                    1.8f,
+                                    0.25f
+                            )
+                    );
+
                     button.action.run();
                     break;
                 }
