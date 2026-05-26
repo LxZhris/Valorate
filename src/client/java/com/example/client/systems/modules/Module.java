@@ -1,44 +1,57 @@
 package com.example.client.systems.modules;
 
+import com.example.client.systems.settings.Setting;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Module {
     private final String name;
     private final Category category;
+    private final List<Setting<?>> settings = new ArrayList<>();
+
     private boolean enabled;
-
-
     private boolean visibleInArraylist = true;
-
-    public boolean isVisibleInArraylist() {
-        return visibleInArraylist;
-    }
-
-    public void setVisibleInArraylist(boolean visibleInArraylist) {
-        this.visibleInArraylist = visibleInArraylist;
-    }
     private boolean keyPressed;
-
-    public boolean isKeyPressed() {
-        return keyPressed;
-    }
-
-    public void setKeyPressed(boolean keyPressed) {
-        this.keyPressed = keyPressed;
-    }
-
     private int key;
-
-    public int getKey() {
-        return key;
-    }
-
-    public void setKey(int key) {
-        this.key = key;
-    }
 
     public Module(String name, Category category, boolean enabled) {
         this.name = name;
         this.category = category;
         this.enabled = enabled;
+    }
+
+    public void toggle() {
+        setEnabled(!enabled);
+    }
+
+    public void setEnabled(boolean enabled) {
+        if (this.enabled == enabled) return;
+
+        this.enabled = enabled;
+
+        if (enabled) {
+            onEnable();
+        } else {
+            onDisable();
+        }
+    }
+
+    public void onEnable() {
+    }
+
+    public void onDisable() {
+    }
+
+    public void onTick() {
+    }
+
+    protected void addSetting(Setting<?> setting) {
+        settings.add(setting);
+    }
+
+    public List<Setting<?>> getSettings() {
+        return settings;
     }
 
     public String getName() {
@@ -53,11 +66,27 @@ public abstract class Module {
         return enabled;
     }
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
+    public boolean isVisibleInArraylist() {
+        return visibleInArraylist;
     }
 
-    public void toggle() {
-        enabled = !enabled;
+    public void setVisibleInArraylist(boolean visibleInArraylist) {
+        this.visibleInArraylist = visibleInArraylist;
+    }
+
+    public boolean isKeyPressed() {
+        return keyPressed;
+    }
+
+    public void setKeyPressed(boolean keyPressed) {
+        this.keyPressed = keyPressed;
+    }
+
+    public int getKey() {
+        return key;
+    }
+
+    public void setKey(int key) {
+        this.key = key;
     }
 }

@@ -7,7 +7,6 @@ public class UIManager {
         Minecraft client = Minecraft.getInstance();
 
         switch (name.toLowerCase()) {
-            case "killauratargetui" -> client.setScreen(new KillAuraTargetUI());
             case "clickgui" -> client.setScreen(new ClickGui());
             default -> {
                 return false;

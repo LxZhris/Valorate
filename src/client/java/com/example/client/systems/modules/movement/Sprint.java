@@ -2,13 +2,21 @@ package com.example.client.systems.modules.movement;
 
 import com.example.client.systems.modules.Category;
 import com.example.client.systems.modules.Module;
+import com.example.client.systems.settings.ModeSetting;
 import net.minecraft.client.Minecraft;
 
 public class Sprint extends Module {
-    private Mode mode = Mode.SAFE;
+    private final ModeSetting mode = new ModeSetting(
+            "Mode",
+            "Safe",
+            "Safe",
+            "Advanced"
+    );
 
     public Sprint() {
         super("Sprint", Category.MOVEMENT, false);
+
+        addSetting(mode);
     }
 
     public void onTick() {
@@ -16,14 +24,13 @@ public class Sprint extends Module {
 
         if (!isEnabled()) return;
         if (client.player == null) return;
-        if (client.options == null) return;
 
-        boolean movingForward = client.options.keyUp.isDown();
-        boolean movingBackward = client.options.keyDown.isDown();
-        boolean movingLeft = client.options.keyLeft.isDown();
-        boolean movingRight = client.options.keyRight.isDown();
+        boolean forward = client.options.keyUp.isDown();
+        boolean back = client.options.keyDown.isDown();
+        boolean left = client.options.keyLeft.isDown();
+        boolean right = client.options.keyRight.isDown();
 
-        boolean moving = movingForward || movingBackward || movingLeft || movingRight;
+        boolean moving = forward || back || left || right;
 
         boolean canSprint =
                 moving &&
@@ -37,16 +44,15 @@ public class Sprint extends Module {
             return;
         }
 
-        if (mode == Mode.SAFE) {
-            client.player.setSprinting(movingForward);
+        if (mode.get().equalsIgnoreCase("Safe")) {
+            client.player.setSprinting(forward);
             return;
         }
 
-        if (mode == Mode.ADVANCED) {
-            client.player.setSprinting(true);
+        if (mode.get().equalsIgnoreCase("Advanced")) {
+            client.player.setSprinting(moving);
         }
     }
-
 
     public void onDisable() {
         Minecraft client = Minecraft.getInstance();
@@ -56,20 +62,7 @@ public class Sprint extends Module {
         }
     }
 
-    public Mode getMode() {
+    public ModeSetting getModeSetting() {
         return mode;
-    }
-
-    public void setMode(Mode mode) {
-        this.mode = mode;
-    }
-
-    public void toggleMode() {
-        mode = mode == Mode.SAFE ? Mode.ADVANCED : Mode.SAFE;
-    }
-
-    public enum Mode {
-        SAFE,
-        ADVANCED
     }
 }

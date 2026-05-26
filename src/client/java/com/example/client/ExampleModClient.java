@@ -1,6 +1,8 @@
 package com.example.client;
 
 import com.example.client.systems.commands.CommandManager;
+import com.example.client.systems.config.ConfigManager;
+import com.example.client.systems.modules.Module;
 import com.example.client.systems.modules.ModuleManager;
 import com.example.client.systems.modules.render.ArraylistRenderer;
 import net.fabricmc.api.ClientModInitializer;
@@ -15,9 +17,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
-import com.example.client.systems.modules.render.ArraylistRenderer;
 import org.lwjgl.glfw.GLFW;
-import com.example.client.systems.config.ConfigManager;
 
 public class ExampleModClient implements ClientModInitializer {
     private static final String MOD_ID = "modid";
@@ -38,11 +38,22 @@ public class ExampleModClient implements ClientModInitializer {
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            ModuleManager.LICHT.onTick();
+            // Wichtig: alle Module ticken, damit Step/Sprint/Licht usw. funktionieren.
+            for (Module module : ModuleManager.MODULES) {
+                module.onTick();
+            }
+
+            if (client.screen != null) {
+                for (Module module : ModuleManager.MODULES) {
+                    module.setKeyPressed(false);
+                }
+
+                return;
+            }
 
             long window = GLFW.glfwGetCurrentContext();
 
-            for (com.example.client.systems.modules.Module module : ModuleManager.MODULES) {
+            for (Module module : ModuleManager.MODULES) {
                 if (module.getKey() == 0) {
                     continue;
                 }
@@ -71,7 +82,6 @@ public class ExampleModClient implements ClientModInitializer {
         );
     }
 
-
     private static void renderInGameWatermark(GuiGraphicsExtractor extractor, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
 
@@ -99,13 +109,10 @@ public class ExampleModClient implements ClientModInitializer {
         extractor.text(client.font, "FPS:" + client.getFps(), x, y + 12, 0xFFFFFFFF, true);
     }
 
-
-
     private static String resolveModVersion() {
         return FabricLoader.getInstance()
                 .getModContainer(MOD_ID)
                 .map(modContainer -> modContainer.getMetadata().getVersion().getFriendlyString())
                 .orElse("1");
     }
-
 }
