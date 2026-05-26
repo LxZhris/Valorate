@@ -160,8 +160,10 @@ public class ValorateMainMenu extends Screen {
         String p5 = "Maxi";
         String p6 = " 25.05.2026";
 
-        int xPos =
-                width - 270;
+        String fullText = p1 + p2 + p3 + p4 + p5 + p6;
+
+// 6 Pixel Abstand vom rechten Rand
+        int xPos = width - mc.font.width(fullText) - 6;
 
         int yPos =
                 6;
