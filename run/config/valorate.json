@@ -1,0 +1,30 @@
+{
+  "HUD": {
+    "enabled": true,
+    "key": 0
+  },
+  "Licht": {
+    "enabled": true,
+    "key": 78
+  },
+  "ClickGUI": {
+    "enabled": false,
+    "key": 344
+  },
+  "Sprint": {
+    "enabled": true,
+    "key": 0
+  },
+  "Step": {
+    "enabled": true,
+    "key": 0
+  },
+  "Jesus": {
+    "enabled": true,
+    "key": 0
+  },
+  "XRay": {
+    "enabled": true,
+    "key": 0
+  }
+}

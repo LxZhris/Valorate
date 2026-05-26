@@ -1,0 +1,2 @@
+/time set minecraft:night
+/time set minecraft:midnight
