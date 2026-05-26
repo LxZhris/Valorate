@@ -4,6 +4,7 @@ import com.example.client.systems.modules.movement.Sprint;
 import com.example.client.systems.modules.movement.Step;
 import com.example.client.systems.modules.render.*;
 import com.example.client.systems.modules.movement.Jesus;
+import com.example.client.systems.modules.combat.Killaura; // Import Killaura
 import net.minecraft.world.item.Item;
 
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ public class ModuleManager {
     public static final Step STEP = new Step();
     public static final Jesus JESUS = new Jesus();
     public static final xRay XRAY = new xRay();
+    public static final Killaura KILLAURA = new Killaura(); // Create Killaura instance
 
     public static void init() {
         MODULES.clear();
@@ -30,6 +32,7 @@ public class ModuleManager {
         MODULES.add(STEP);
         MODULES.add(JESUS);
         MODULES.add(XRAY);
+        MODULES.add(KILLAURA); // Add Killaura to the list
     }
 
     public static Module getModuleByName(String name) {
