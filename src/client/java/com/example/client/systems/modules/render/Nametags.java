@@ -8,7 +8,8 @@ public class Nametags extends Module {
     public static Nametags INSTANCE;
 
     public Nametags() {
-        super("Nametags", Category.RENDER,false);
+        super("Nametags", Category.RENDER, false,
+                "Displays advanced player nametags");
         INSTANCE = this;
     }
 }

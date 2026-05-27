@@ -23,12 +23,12 @@
     "enabled": true,
     "key": 0
   },
-  "XRay": {
+  "xRay": {
     "enabled": false,
     "key": 0
   },
   "Killaura": {
-    "enabled": false,
+    "enabled": true,
     "key": 75
   }
 }

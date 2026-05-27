@@ -10,6 +10,8 @@ public abstract class Module {
     private final Category category;
     private final List<Setting<?>> settings = new ArrayList<>();
 
+    private String description = "No description available.";
+
     private boolean enabled;
     private boolean visibleInArraylist = true;
     private boolean keyPressed;
@@ -19,6 +21,11 @@ public abstract class Module {
         this.name = name;
         this.category = category;
         this.enabled = enabled;
+    }
+
+    public Module(String name, Category category, boolean enabled, String description) {
+        this(name, category, enabled);
+        this.description = description;
     }
 
     public void toggle() {
@@ -56,6 +63,10 @@ public abstract class Module {
 
     public String getName() {
         return name;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public Category getCategory() {

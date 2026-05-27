@@ -7,8 +7,8 @@ import net.minecraft.client.Minecraft;
 public class Licht extends Module {
 
     public Licht() {
-        super("Licht", Category.RENDER, false);
-    }
+        super("Licht", Category.RENDER, false,
+                "Brightens dark areas");    }
 
     public void onTick() {
         Minecraft client = Minecraft.getInstance();

@@ -35,7 +35,7 @@ public class Killaura extends Module {
     private long lastAttackTick = -1L;
 
     public Killaura() {
-        super("Killaura", Category.COMBAT, false);
+        super("Killaura", Category.COMBAT, false, "Automatically attacks nearby entities");
         INSTANCE = this;
 
         addSetting(attackPlayers);
@@ -44,7 +44,17 @@ public class Killaura extends Module {
         addSetting(range);
         addSetting(attackThroughWalls);
         addSetting(f5RotationMode);
+
+        addSetting(targetMode);
+        addSetting(switchDelay);
     }
+    private final ModeSetting targetMode =
+            new ModeSetting("Target Mode", "Single", "Single", "Switch");
+
+    private final NumberSetting switchDelay =
+            (NumberSetting) new NumberSetting("Switch Delay", 3, 1, 10, 1)
+                    .visibleWhen(() -> targetMode.get().equals("Switch"));
+
 
     @Override
     public void onTick() {

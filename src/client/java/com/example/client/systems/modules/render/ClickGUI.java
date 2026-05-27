@@ -9,8 +9,8 @@ import org.lwjgl.glfw.GLFW;
 public class ClickGUI extends Module {
 
     public ClickGUI() {
-        super("ClickGUI", Category.RENDER, false);
-
+        super("ClickGUI", Category.RENDER, false,
+                "Opens the client click interface");
         setKey(GLFW.GLFW_KEY_RIGHT_SHIFT);
         setVisibleInArraylist(false);
     }

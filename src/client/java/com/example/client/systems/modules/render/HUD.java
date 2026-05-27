@@ -7,7 +7,8 @@ public class HUD extends Module {
     private boolean watermark = true;
 
     public HUD() {
-        super("HUD", Category.RENDER, true);
+        super("HUD", Category.RENDER, false,
+                "Displays client HUD elements");
         setVisibleInArraylist(false);
     }
 

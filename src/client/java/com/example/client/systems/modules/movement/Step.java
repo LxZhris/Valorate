@@ -16,7 +16,8 @@ public class Step extends Module {
     private final NumberSetting stepHealth = new NumberSetting("Step Health", 5.0, 1.0, 36.0, 1.0);private double previousStepHeight = 0.6;
 
     public Step() {
-        super("Step", Category.MOVEMENT, false);
+        super("Step", Category.MOVEMENT, false,
+                "Steps up blocks automatically");
 
         addSetting(height);
         addSetting(activeWhen);

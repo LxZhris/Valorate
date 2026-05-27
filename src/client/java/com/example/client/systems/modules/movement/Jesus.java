@@ -24,7 +24,8 @@ public class Jesus extends Module {
             new BooleanSetting("Lava", false);
 
     public Jesus() {
-        super("Jesus", Category.MOVEMENT, false);
+        super("Jesus", Category.MOVEMENT, false,
+                "Allows walking on water");
 
         addSetting(mode);
         addSetting(water);

@@ -2,6 +2,7 @@ package com.example.client.systems.commands;
 
 import com.example.client.systems.commands.commands.BindCommand;
 import com.example.client.systems.commands.commands.HelpCommand;
+import com.example.client.systems.commands.commands.RenameCommand;
 import com.example.client.systems.utils.ChatUtils;
 import com.example.client.systems.commands.commands.DevCommand;
 
@@ -16,6 +17,7 @@ public class CommandManager {
         COMMANDS.add(new BindCommand());
         COMMANDS.add(new HelpCommand());
         COMMANDS.add(new DevCommand());
+        COMMANDS.add(new RenameCommand());
     }
 
     public static void execute(String message) {
