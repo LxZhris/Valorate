@@ -16,7 +16,7 @@ loom {
     splitEnvironmentSourceSets()
 
     mods {
-        "modid" {
+        "Valorate Client" {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }

@@ -24,6 +24,7 @@ public class ModuleManager {
     public static final Killaura KILLAURA = new Killaura();
     public static final NoFall NO_FALL = new NoFall();
     public static final ClickTP CLICK_TP = new ClickTP();
+    public static final Notifications NOTIFICATIONS = new Notifications();
 
     public static void init() {
         MODULES.clear();
@@ -39,6 +40,7 @@ public class ModuleManager {
         MODULES.add(KILLAURA); // Add Killaura to the list
         MODULES.add(NO_FALL);
         MODULES.add(CLICK_TP);
+        MODULES.add(NOTIFICATIONS);
     }
 
     public static Module getModuleByName(String name) {

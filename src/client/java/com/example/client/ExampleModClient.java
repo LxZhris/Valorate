@@ -18,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
+import com.example.client.systems.modules.render.NotificationRenderer;
 
 
 public class ExampleModClient implements ClientModInitializer {
@@ -64,6 +65,7 @@ public class ExampleModClient implements ClientModInitializer {
                 if (pressed && !module.isKeyPressed()) {
                     module.toggle();
                     ConfigManager.save();
+                    NotificationRenderer.add(module, module.isEnabled());
 
                     if (client.player != null) {
                         client.player.sendSystemMessage(Component.literal(
@@ -92,6 +94,7 @@ public class ExampleModClient implements ClientModInitializer {
         }
 
         ArraylistRenderer.render(extractor);
+        NotificationRenderer.render(extractor);
 
         if (!ModuleManager.HUD.isWatermark()) {
             return;

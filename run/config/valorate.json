@@ -6,7 +6,7 @@
     "settings": {}
   },
   "Licht": {
-    "enabled": true,
+    "enabled": false,
     "key": 78,
     "visibleInArraylist": true,
     "settings": {}
@@ -62,8 +62,8 @@
       "Speed": 1.0,
       "Auto Jump": true,
       "Jump Height": 0.5,
-      "Drag Back Mode": "YPort",
-      "YPort Height": 5.0
+      "Drag Back Mode": "Off",
+      "YPort Height": 0.1
     }
   },
   "Killaura": {
@@ -100,6 +100,16 @@
       "Overlay Opacity": 205.0,
       "Sneak Only": true,
       "Ignore Interact": true
+    }
+  },
+  "Notifications": {
+    "enabled": true,
+    "key": 0,
+    "visibleInArraylist": true,
+    "settings": {
+      "Duration": 2.0,
+      "Max Amount": 3.0,
+      "Sound": true
     }
   }
 }
