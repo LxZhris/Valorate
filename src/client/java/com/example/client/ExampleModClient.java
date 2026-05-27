@@ -83,6 +83,7 @@ public class ExampleModClient implements ClientModInitializer {
         );
     }
 
+
     private static void renderInGameWatermark(GuiGraphicsExtractor extractor, net.minecraft.client.DeltaTracker tickCounter) {
         Minecraft client = Minecraft.getInstance();
 

@@ -1,12 +1,10 @@
 package com.example.client.systems.modules;
 
-import com.example.client.systems.modules.movement.Sprint;
-import com.example.client.systems.modules.movement.Step;
-import com.example.client.systems.modules.movement.Strafe;
+import com.example.client.systems.modules.movement.*;
 import com.example.client.systems.modules.render.*;
-import com.example.client.systems.modules.movement.Jesus;
 import com.example.client.systems.modules.combat.Killaura; // Import Killaura
 import net.minecraft.world.item.Item;
+
 
 import javax.naming.Name;
 import java.util.ArrayList;
@@ -24,6 +22,8 @@ public class ModuleManager {
     public static final Jesus JESUS = new Jesus();
     public static final xRay XRAY = new xRay();
     public static final Killaura KILLAURA = new Killaura();
+    public static final NoFall NO_FALL = new NoFall();
+    public static final ClickTP CLICK_TP = new ClickTP();
 
     public static void init() {
         MODULES.clear();
@@ -37,6 +37,8 @@ public class ModuleManager {
         MODULES.add(XRAY);
         MODULES.add(STRAFE);
         MODULES.add(KILLAURA); // Add Killaura to the list
+        MODULES.add(NO_FALL);
+        MODULES.add(CLICK_TP);
     }
 
     public static Module getModuleByName(String name) {

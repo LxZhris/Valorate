@@ -24,7 +24,12 @@ public class Strafe extends Module {
     private boolean hasJumped = false; // Track if a jump has been initiated
 
     public Strafe() {
-        super("Strafe", Category.MOVEMENT, false);
+        super(
+                "Strafe",
+                Category.MOVEMENT,
+                false,
+                "Allows faster and smoother directional movement."
+        );
         addSetting(airStrafe);
         addSetting(groundStrafe);
         addSetting(speed);
@@ -36,6 +41,8 @@ public class Strafe extends Module {
 
     @Override
     public void onTick() {
+        if (!isEnabled()) return;
+
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
 

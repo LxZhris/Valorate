@@ -4,7 +4,9 @@
 	"compatibilityLevel": "JAVA_25",
 	"client": [
       "MinecraftClientMixin",
-      "PlayerMixin"
+      "PlayerMixin",
+      "XRayBlockMixin",
+      "ClickTPOutlineMixin"
     ],
 	"injectors": {
 		"defaultRequire": 1
