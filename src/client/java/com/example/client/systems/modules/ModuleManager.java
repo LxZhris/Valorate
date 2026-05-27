@@ -2,6 +2,7 @@ package com.example.client.systems.modules;
 
 import com.example.client.systems.modules.movement.Sprint;
 import com.example.client.systems.modules.movement.Step;
+import com.example.client.systems.modules.movement.Strafe;
 import com.example.client.systems.modules.render.*;
 import com.example.client.systems.modules.movement.Jesus;
 import com.example.client.systems.modules.combat.Killaura; // Import Killaura
@@ -18,6 +19,7 @@ public class ModuleManager {
     public static final ClickGUI CLICK_GUI = new ClickGUI();
     public static final Sprint SPRINT = new Sprint();
     public static final Step STEP = new Step();
+    public static final Strafe STRAFE = new Strafe();
     public static final Jesus JESUS = new Jesus();
     public static final xRay XRAY = new xRay();
     public static final Killaura KILLAURA = new Killaura(); // Create Killaura instance
@@ -32,6 +34,7 @@ public class ModuleManager {
         MODULES.add(STEP);
         MODULES.add(JESUS);
         MODULES.add(XRAY);
+        MODULES.add(STRAFE);
         MODULES.add(KILLAURA); // Add Killaura to the list
     }
 
