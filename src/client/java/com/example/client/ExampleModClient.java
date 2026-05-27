@@ -19,6 +19,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import org.lwjgl.glfw.GLFW;
 
+
 public class ExampleModClient implements ClientModInitializer {
     private static final String MOD_ID = "modid";
 

@@ -7,6 +7,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    flatDir {
+        dirs 'libs'
+    }
 }
 
 loom {
@@ -25,7 +28,10 @@ dependencies {
 
     implementation "net.fabricmc:fabric-loader:${project.loader_version}"
     implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    implementation name: 'baritone-common-1.17.0'
 }
+
 
 processResources {
     def version = project.version

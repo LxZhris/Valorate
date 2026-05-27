@@ -3,8 +3,8 @@
 	"package": "com.example.client.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"client": [
-      "MinecraftClientMixin"
-
+      "MinecraftClientMixin",
+      "PlayerMixin"
     ],
 	"injectors": {
 		"defaultRequire": 1

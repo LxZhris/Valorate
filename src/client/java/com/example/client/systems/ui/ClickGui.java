@@ -35,6 +35,7 @@ public class ClickGui extends Screen {
     private int draggingSliderWidth;
 
     private Module bindingModule;
+    private String hoveredDescription;
 
     public ClickGui() {
         super(Component.literal("Valorate ClickGUI"));
@@ -52,6 +53,7 @@ public class ClickGui extends Screen {
     @Override
     public void extractRenderState(GuiGraphicsExtractor g, int mouseX, int mouseY, float delta) {
         Minecraft client = Minecraft.getInstance();
+        hoveredDescription = null;
 
         boolean leftDown = GLFW.glfwGetMouseButton(GLFW.glfwGetCurrentContext(), GLFW.GLFW_MOUSE_BUTTON_LEFT) == GLFW.GLFW_PRESS;
         boolean rightDown = GLFW.glfwGetMouseButton(GLFW.glfwGetCurrentContext(), GLFW.GLFW_MOUSE_BUTTON_RIGHT) == GLFW.GLFW_PRESS;
@@ -65,17 +67,10 @@ public class ClickGui extends Screen {
             ConfigManager.save();
         }
 
-        if (!leftDown) {
-            draggingSlider = null;
-        }
+        if (!leftDown) draggingSlider = null;
 
-        if (leftDown && !leftWasDown) {
-            handleClick(mouseX, mouseY, 0);
-        }
-
-        if (rightDown && !rightWasDown) {
-            handleClick(mouseX, mouseY, 1);
-        }
+        if (leftDown && !leftWasDown) handleClick(mouseX, mouseY, 0);
+        if (rightDown && !rightWasDown) handleClick(mouseX, mouseY, 1);
 
         leftWasDown = leftDown;
         rightWasDown = rightDown;
@@ -85,13 +80,13 @@ public class ClickGui extends Screen {
             draggingPanel.y = mouseY - dragOffsetY;
         }
 
-        if (!leftDown) {
-            draggingPanel = null;
-        }
+        if (!leftDown) draggingPanel = null;
 
         for (Panel panel : panels.values()) {
             renderPanel(g, client, panel, mouseX, mouseY);
         }
+
+        renderDescriptionTooltip(g, client, mouseX, mouseY);
     }
 
     private void renderPanel(GuiGraphicsExtractor g, Minecraft client, Panel panel, int mouseX, int mouseY) {
@@ -125,14 +120,18 @@ public class ClickGui extends Screen {
             if (module.getName().equalsIgnoreCase("ClickGUI")) continue;
 
             boolean moduleHovered = isInside(mouseX, mouseY, panel.x, yOff, panelWidth, moduleHeight);
+
+            if (moduleHovered) {
+                hoveredDescription = module.getDescription();
+            }
+
             boolean opened = moduleOpen.getOrDefault(module, false);
 
             g.fill(panel.x, yOff, panel.x + panelWidth, yOff + moduleHeight, moduleHovered || opened ? hover : bodyColor);
 
             int moduleColor = module.isEnabled() ? rainbow(yOff * 30) : text;
 
-            g.text(client.font, Component.literal(module.getName()),
-                    panel.x + 5, yOff + 4, moduleColor, false);
+            g.text(client.font, Component.literal(module.getName()), panel.x + 5, yOff + 4, moduleColor, false);
 
             yOff += moduleHeight;
 
@@ -142,31 +141,22 @@ public class ClickGui extends Screen {
 
                 int settingY = yOff + 6;
 
-                if (module.getSettings().isEmpty()) {
+                if (!hasVisibleSettings(module)) {
                     g.text(client.font, Component.literal("No settings"), panel.x + 8, settingY, 0xFF999999, false);
                     settingY += 18;
                 } else {
-                    for (int i = 0; i < module.getSettings().size(); i++) {
-                        Setting<?> setting = module.getSettings().get(i);
+                    for (Setting<?> setting : module.getSettings()) {
+                        if (!setting.isVisible()) continue;
 
                         renderSetting(g, client, setting, panel.x + 8, settingY, panelWidth - 16);
                         settingY += getSettingHeight(setting);
 
-                        boolean nextIsBoolean = i + 1 < module.getSettings().size()
-                                && module.getSettings().get(i + 1) instanceof BooleanSetting;
-
-                        boolean currentIsBoolean = setting instanceof BooleanSetting;
-
-                        if (!currentIsBoolean || !nextIsBoolean) {
-                            drawSeparator(g, panel, settingY);
-                            settingY += 5;
-                        }
+                        drawSeparator(g, panel, settingY);
+                        settingY += 5;
                     }
                 }
 
                 renderKeybind(g, client, module, panel.x + 8, settingY, panelWidth - 16);
-                settingY += 22;
-
                 yOff += settingsHeight;
             }
 
@@ -174,10 +164,23 @@ public class ClickGui extends Screen {
         }
     }
 
-    private void renderKeybind(GuiGraphicsExtractor g, Minecraft client, Module module, int x, int y, int width) {
-        int text = 0xFFFFFFFF;
-        int accent = 0xFFFFDD00;
+    private void renderDescriptionTooltip(GuiGraphicsExtractor g, Minecraft client, int mouseX, int mouseY) {
+        if (hoveredDescription == null || hoveredDescription.isEmpty()) return;
 
+        int padding = 5;
+        int x = mouseX + 10;
+        int y = mouseY + 10;
+        int width = client.font.width(hoveredDescription) + padding * 2;
+        int height = 16;
+
+        g.fill(x, y, x + width, y + height, 0xEE08080A);
+        g.fill(x, y, x + width, y + 1, 0xFFFFDD00);
+        g.fill(x, y + height - 1, x + width, y + height, 0x55333333);
+
+        g.text(client.font, Component.literal(hoveredDescription), x + padding, y + 5, 0xFFCCCCCC, false);
+    }
+
+    private void renderKeybind(GuiGraphicsExtractor g, Minecraft client, Module module, int x, int y, int width) {
         String keyText;
 
         if (bindingModule == module) {
@@ -186,16 +189,12 @@ public class ClickGui extends Screen {
             keyText = "[...]";
         } else {
             keyText = GLFW.glfwGetKeyName(module.getKey(), 0);
-
-            if (keyText == null) {
-                keyText = "Key " + module.getKey();
-            }
-
+            if (keyText == null) keyText = "Key " + module.getKey();
             keyText = keyText.toUpperCase();
         }
 
-        g.text(client.font, Component.literal("Keybind:"), x, y + 5, text, false);
-        g.text(client.font, Component.literal(keyText), x + width - client.font.width(keyText), y + 5, accent, false);
+        g.text(client.font, Component.literal("Keybind:"), x, y + 5, 0xFFFFFFFF, false);
+        g.text(client.font, Component.literal(keyText), x + width - client.font.width(keyText), y + 5, 0xFFFFDD00, false);
     }
 
     private void renderSetting(GuiGraphicsExtractor g, Minecraft client, Setting<?> setting, int x, int y, int width) {
@@ -305,8 +304,9 @@ public class ClickGui extends Screen {
                 if (opened) {
                     int settingY = yOff + 6;
 
-                    for (int i = 0; i < module.getSettings().size(); i++) {
-                        Setting<?> setting = module.getSettings().get(i);
+                    for (Setting<?> setting : module.getSettings()) {
+                        if (!setting.isVisible()) continue;
+
                         int h = getSettingHeight(setting);
 
                         if (isInside(mouseX, mouseY, panel.x + 8, settingY, panel.width - 16, h)) {
@@ -314,23 +314,11 @@ public class ClickGui extends Screen {
                             return true;
                         }
 
-                        settingY += h;
-
-                        boolean nextIsBoolean = i + 1 < module.getSettings().size()
-                                && module.getSettings().get(i + 1) instanceof BooleanSetting;
-
-                        boolean currentIsBoolean = setting instanceof BooleanSetting;
-
-                        if (!currentIsBoolean || !nextIsBoolean) {
-                            settingY += 5;
-                        }
+                        settingY += h + 5;
                     }
 
                     if (isInside(mouseX, mouseY, panel.x + 8, settingY, panel.width - 16, 22)) {
-                        if (button == 0) {
-                            bindingModule = module;
-                        }
-
+                        if (button == 0) bindingModule = module;
                         return true;
                     }
 
@@ -343,6 +331,8 @@ public class ClickGui extends Screen {
     }
 
     private void handleSettingClick(Setting<?> setting, double mouseX, double mouseY, int x, int y, int width, int button) {
+        if (!setting.isVisible()) return;
+
         if (setting instanceof BooleanSetting bool) {
             if (button == 0) {
                 bool.toggle();
@@ -400,6 +390,14 @@ public class ClickGui extends Screen {
         }
     }
 
+    private boolean hasVisibleSettings(Module module) {
+        for (Setting<?> setting : module.getSettings()) {
+            if (setting.isVisible()) return true;
+        }
+
+        return false;
+    }
+
     private int getSettingHeight(Setting<?> setting) {
         if (setting instanceof ModeSetting mode) {
             if (mode.isOpen()) {
@@ -409,9 +407,7 @@ public class ClickGui extends Screen {
             return 28;
         }
 
-        if (setting instanceof NumberSetting) {
-            return 30;
-        }
+        if (setting instanceof NumberSetting) return 30;
 
         return 18;
     }
@@ -419,22 +415,14 @@ public class ClickGui extends Screen {
     private int getSettingsHeight(Module module) {
         int height = 6;
 
-        if (module.getSettings().isEmpty()) {
+        if (!hasVisibleSettings(module)) {
             height += 18;
         } else {
-            for (int i = 0; i < module.getSettings().size(); i++) {
-                Setting<?> setting = module.getSettings().get(i);
+            for (Setting<?> setting : module.getSettings()) {
+                if (!setting.isVisible()) continue;
 
                 height += getSettingHeight(setting);
-
-                boolean nextIsBoolean = i + 1 < module.getSettings().size()
-                        && module.getSettings().get(i + 1) instanceof BooleanSetting;
-
-                boolean currentIsBoolean = setting instanceof BooleanSetting;
-
-                if (!currentIsBoolean || !nextIsBoolean) {
-                    height += 5;
-                }
+                height += 5;
             }
         }
 

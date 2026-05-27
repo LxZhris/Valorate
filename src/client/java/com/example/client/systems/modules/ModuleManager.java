@@ -8,6 +8,7 @@ import com.example.client.systems.modules.movement.Jesus;
 import com.example.client.systems.modules.combat.Killaura; // Import Killaura
 import net.minecraft.world.item.Item;
 
+import javax.naming.Name;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,7 +23,7 @@ public class ModuleManager {
     public static final Strafe STRAFE = new Strafe();
     public static final Jesus JESUS = new Jesus();
     public static final xRay XRAY = new xRay();
-    public static final Killaura KILLAURA = new Killaura(); // Create Killaura instance
+    public static final Killaura KILLAURA = new Killaura();
 
     public static void init() {
         MODULES.clear();

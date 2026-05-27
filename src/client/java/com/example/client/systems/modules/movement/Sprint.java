@@ -14,7 +14,8 @@ public class Sprint extends Module {
     );
 
     public Sprint() {
-        super("Sprint", Category.MOVEMENT, false);
+        super("Sprint", Category.MOVEMENT, false,
+                "Automatically sprints");
 
         addSetting(mode);
     }

@@ -47,7 +47,8 @@ public class xRay extends Module {
     );
 
     public xRay() {
-        super("XRay", Category.RENDER, false);
+        super("xRay", Category.RENDER, false,
+                "Highlights valuable blocks through walls");
 
         INSTANCE = this;
 
