@@ -5,6 +5,7 @@ import com.example.client.systems.modules.Category;
 import com.example.client.systems.modules.Module;
 import com.example.client.systems.modules.ModuleManager;
 import com.example.client.systems.settings.BooleanSetting;
+import com.example.client.systems.settings.ButtonSetting;
 import com.example.client.systems.settings.ModeSetting;
 import com.example.client.systems.settings.NumberSetting;
 import com.example.client.systems.settings.Setting;
@@ -37,6 +38,11 @@ public class ClickGui extends Screen {
     private Module bindingModule;
     private String hoveredDescription;
 
+    private static final int PANEL_WIDTH = 128;
+    private static final int HEADER_HEIGHT = 20;
+    private static final int MODULE_HEIGHT = 17;
+    private static final int MAX_PANEL_HEIGHT = 360;
+
     public ClickGui() {
         super(Component.literal("Valorate ClickGUI"));
 
@@ -45,7 +51,7 @@ public class ClickGui extends Screen {
 
             for (Category category : Category.values()) {
                 panels.put(category, new Panel(category, startX, 25));
-                startX += 110;
+                startX += PANEL_WIDTH + 10;
             }
         }
     }
@@ -97,71 +103,114 @@ public class ClickGui extends Screen {
         int text = 0xFFFFFFFF;
         int hover = 0x33FFDD00;
 
-        int panelWidth = panel.width;
-        int headerHeight = 18;
-        int moduleHeight = 16;
+        boolean headerHovered = isInside(mouseX, mouseY, panel.x, panel.y, panel.width, HEADER_HEIGHT);
 
-        boolean headerHovered = isInside(mouseX, mouseY, panel.x, panel.y, panelWidth, headerHeight);
+        g.fill(panel.x, panel.y, panel.x + panel.width, panel.y + HEADER_HEIGHT, headerHovered ? 0xAAFFDD00 : headerColor);
 
-        g.fill(panel.x, panel.y, panel.x + panelWidth, panel.y + headerHeight, headerHovered ? 0xAAFFDD00 : headerColor);
+        renderCategoryIcon(g, client, panel.category, panel.x + 5, panel.y + 5);
 
         g.text(client.font, Component.literal(panel.category.name()).withStyle(ChatFormatting.YELLOW),
-                panel.x + 5, panel.y + 5, headerHovered ? 0xFF000000 : accent, false);
+                panel.x + 20, panel.y + 6, headerHovered ? 0xFF000000 : accent, false);
 
         g.text(client.font, Component.literal(panel.open ? "-" : "+"),
-                panel.x + panelWidth - 10, panel.y + 5, headerHovered ? 0xFF000000 : accent, false);
+                panel.x + panel.width - 12, panel.y + 6, headerHovered ? 0xFF000000 : accent, false);
 
         if (!panel.open) return;
 
-        int yOff = panel.y + headerHeight;
+        int contentHeight = getPanelContentHeight(panel);
+        int visibleHeight = Math.min(contentHeight, MAX_PANEL_HEIGHT);
+        panel.scroll = Math.max(0, Math.min(panel.scroll, Math.max(0, contentHeight - visibleHeight)));
+
+        int bodyY = panel.y + HEADER_HEIGHT;
+        g.fill(panel.x, bodyY, panel.x + panel.width, bodyY + visibleHeight, 0xBB07070A);
+
+        int yOff = bodyY - panel.scroll;
 
         for (Module module : ModuleManager.MODULES) {
             if (module.getCategory() != panel.category) continue;
             if (module.getName().equalsIgnoreCase("ClickGUI")) continue;
 
-            boolean moduleHovered = isInside(mouseX, mouseY, panel.x, yOff, panelWidth, moduleHeight);
+            boolean opened = moduleOpen.getOrDefault(module, false);
+            boolean moduleVisible = yOff + MODULE_HEIGHT >= bodyY && yOff <= bodyY + visibleHeight;
 
-            if (moduleHovered) {
-                hoveredDescription = module.getDescription();
+            if (moduleVisible) {
+                boolean moduleHovered = isInside(mouseX, mouseY, panel.x, yOff, panel.width, MODULE_HEIGHT);
+
+                if (moduleHovered) hoveredDescription = module.getDescription();
+
+                g.fill(panel.x, yOff, panel.x + panel.width, yOff + MODULE_HEIGHT, moduleHovered || opened ? hover : bodyColor);
+
+                int moduleColor = module.isEnabled() ? rainbow(yOff * 30) : text;
+                g.text(client.font, Component.literal(module.getName()), panel.x + 7, yOff + 5, moduleColor, false);
             }
 
-            boolean opened = moduleOpen.getOrDefault(module, false);
-
-            g.fill(panel.x, yOff, panel.x + panelWidth, yOff + moduleHeight, moduleHovered || opened ? hover : bodyColor);
-
-            int moduleColor = module.isEnabled() ? rainbow(yOff * 30) : text;
-
-            g.text(client.font, Component.literal(module.getName()), panel.x + 5, yOff + 4, moduleColor, false);
-
-            yOff += moduleHeight;
+            yOff += MODULE_HEIGHT;
 
             if (opened) {
                 int settingsHeight = getSettingsHeight(module);
-                g.fill(panel.x, yOff, panel.x + panelWidth, yOff + settingsHeight, 0xCC0B0B10);
 
-                int settingY = yOff + 6;
+                if (yOff + settingsHeight >= bodyY && yOff <= bodyY + visibleHeight) {
+                    g.fill(panel.x, Math.max(yOff, bodyY), panel.x + panel.width, Math.min(yOff + settingsHeight, bodyY + visibleHeight), 0xCC0B0B10);
 
-                if (!hasVisibleSettings(module)) {
-                    g.text(client.font, Component.literal("No settings"), panel.x + 8, settingY, 0xFF999999, false);
-                    settingY += 18;
-                } else {
-                    for (Setting<?> setting : module.getSettings()) {
-                        if (!setting.isVisible()) continue;
+                    int settingY = yOff + 6;
 
-                        renderSetting(g, client, setting, panel.x + 8, settingY, panelWidth - 16);
-                        settingY += getSettingHeight(setting);
+                    if (!hasVisibleSettings(module)) {
+                        if (settingY >= bodyY && settingY <= bodyY + visibleHeight) {
+                            g.text(client.font, Component.literal("No settings"), panel.x + 8, settingY, 0xFF999999, false);
+                        }
+                    } else {
+                        for (Setting<?> setting : module.getSettings()) {
+                            if (!setting.isVisible()) continue;
 
-                        drawSeparator(g, panel, settingY);
-                        settingY += 5;
+                            int h = getSettingHeight(setting);
+
+                            if (settingY + h >= bodyY && settingY <= bodyY + visibleHeight) {
+                                renderSetting(g, client, setting, panel.x + 8, settingY, panel.width - 16);
+                                drawSeparator(g, panel, settingY + h);
+                            }
+
+                            settingY += h + 5;
+                        }
+                    }
+
+                    int keyY = yOff + settingsHeight - 26;
+                    if (keyY >= bodyY && keyY <= bodyY + visibleHeight) {
+                        renderKeybind(g, client, module, panel.x + 8, keyY, panel.width - 16);
                     }
                 }
 
-                renderKeybind(g, client, module, panel.x + 8, settingY, panelWidth - 16);
                 yOff += settingsHeight;
             }
 
-            g.fill(panel.x, yOff - 1, panel.x + panelWidth, yOff, lineColor);
+            if (yOff >= bodyY && yOff <= bodyY + visibleHeight) {
+                g.fill(panel.x, yOff - 1, panel.x + panel.width, yOff, lineColor);
+            }
         }
+
+        if (contentHeight > visibleHeight) {
+            int barH = Math.max(24, (int) ((visibleHeight / (double) contentHeight) * visibleHeight));
+            int barY = bodyY + (int) ((panel.scroll / (double) Math.max(1, contentHeight - visibleHeight)) * (visibleHeight - barH));
+
+            g.fill(panel.x + panel.width - 3, bodyY, panel.x + panel.width - 1, bodyY + visibleHeight, 0x55111111);
+            g.fill(panel.x + panel.width - 3, barY, panel.x + panel.width - 1, barY + barH, accent);
+        }
+    }
+
+    private void renderCategoryIcon(GuiGraphicsExtractor g, Minecraft client, Category category, int x, int y) {
+        int color = switch (category.name().toLowerCase()) {
+            case "combat" -> 0xFFFF4444;
+            case "movement" -> 0xFF44FF66;
+            case "render" -> 0xFFAA44FF;
+            case "world" -> 0xFF44AAFF;
+            case "misc" -> 0xFFFFDD00;
+            default -> 0xFFFFFFFF;
+        };
+
+        g.fill(x, y, x + 10, y + 10, 0xFF111111);
+        g.fill(x + 2, y + 2, x + 8, y + 8, color);
+
+        String letter = category.name().substring(0, 1);
+        g.text(client.font, Component.literal(letter), x + 3, y + 2, 0xFF000000, false);
     }
 
     private void renderDescriptionTooltip(GuiGraphicsExtractor g, Minecraft client, int mouseX, int mouseY) {
@@ -201,6 +250,14 @@ public class ClickGui extends Screen {
         int accent = 0xFFFFDD00;
         int text = 0xFFFFFFFF;
         int muted = 0xFF999999;
+
+        if (setting instanceof ButtonSetting button) {
+            g.text(client.font, Component.literal(setting.getName()), x, y + 4, text, false);
+
+            String value = button.get();
+            g.text(client.font, Component.literal(value), x + width - client.font.width(value), y + 4, accent, false);
+            return;
+        }
 
         if (setting instanceof BooleanSetting bool) {
             g.text(client.font, Component.literal(setting.getName()), x, y + 4, text, false);
@@ -262,7 +319,7 @@ public class ClickGui extends Screen {
 
     private boolean handleClick(double mouseX, double mouseY, int button) {
         for (Panel panel : panels.values()) {
-            if (isInside(mouseX, mouseY, panel.x, panel.y, panel.width, 18)) {
+            if (isInside(mouseX, mouseY, panel.x, panel.y, panel.width, HEADER_HEIGHT)) {
                 if (button == 0) {
                     draggingPanel = panel;
                     dragOffsetX = (int) mouseX - panel.x;
@@ -278,7 +335,13 @@ public class ClickGui extends Screen {
 
             if (!panel.open) continue;
 
-            int yOff = panel.y + 18;
+            int bodyY = panel.y + HEADER_HEIGHT;
+            int contentHeight = getPanelContentHeight(panel);
+            int visibleHeight = Math.min(contentHeight, MAX_PANEL_HEIGHT);
+
+            if (!isInside(mouseX, mouseY, panel.x, bodyY, panel.width, visibleHeight)) continue;
+
+            int yOff = bodyY - panel.scroll;
 
             for (Module module : ModuleManager.MODULES) {
                 if (module.getCategory() != panel.category) continue;
@@ -286,7 +349,7 @@ public class ClickGui extends Screen {
 
                 boolean opened = moduleOpen.getOrDefault(module, false);
 
-                if (isInside(mouseX, mouseY, panel.x, yOff, panel.width, 16)) {
+                if (isInside(mouseX, mouseY, panel.x, yOff, panel.width, MODULE_HEIGHT)) {
                     if (button == 0) {
                         module.toggle();
                         ConfigManager.save();
@@ -299,7 +362,7 @@ public class ClickGui extends Screen {
                     return true;
                 }
 
-                yOff += 16;
+                yOff += MODULE_HEIGHT;
 
                 if (opened) {
                     int settingY = yOff + 6;
@@ -317,7 +380,9 @@ public class ClickGui extends Screen {
                         settingY += h + 5;
                     }
 
-                    if (isInside(mouseX, mouseY, panel.x + 8, settingY, panel.width - 16, 22)) {
+                    int keyY = yOff + getSettingsHeight(module) - 26;
+
+                    if (isInside(mouseX, mouseY, panel.x + 8, keyY, panel.width - 16, 22)) {
                         if (button == 0) bindingModule = module;
                         return true;
                     }
@@ -332,6 +397,15 @@ public class ClickGui extends Screen {
 
     private void handleSettingClick(Setting<?> setting, double mouseX, double mouseY, int x, int y, int width, int button) {
         if (!setting.isVisible()) return;
+
+        if (setting instanceof ButtonSetting buttonSetting) {
+            if (button == 0) {
+                buttonSetting.press();
+                ConfigManager.save();
+            }
+
+            return;
+        }
 
         if (setting instanceof BooleanSetting bool) {
             if (button == 0) {
@@ -390,6 +464,29 @@ public class ClickGui extends Screen {
         }
     }
 
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollY) {
+        for (Panel panel : panels.values()) {
+            if (!panel.open) continue;
+
+            int bodyY = panel.y + HEADER_HEIGHT;
+            int contentHeight = getPanelContentHeight(panel);
+            int visibleHeight = Math.min(contentHeight, MAX_PANEL_HEIGHT);
+
+            if (!isInside(mouseX, mouseY, panel.x, bodyY, panel.width, visibleHeight)) continue;
+
+            panel.scroll -= (int) (scrollY * 22);
+
+            if (panel.scroll < 0) panel.scroll = 0;
+
+            int maxScroll = Math.max(0, contentHeight - visibleHeight);
+            if (panel.scroll > maxScroll) panel.scroll = maxScroll;
+
+            return true;
+        }
+
+        return true;
+    }
+
     private boolean hasVisibleSettings(Module module) {
         for (Setting<?> setting : module.getSettings()) {
             if (setting.isVisible()) return true;
@@ -399,6 +496,8 @@ public class ClickGui extends Screen {
     }
 
     private int getSettingHeight(Setting<?> setting) {
+        if (setting instanceof ButtonSetting) return 18;
+
         if (setting instanceof ModeSetting mode) {
             if (mode.isOpen()) {
                 return 44 + mode.getModes().length * 15;
@@ -428,6 +527,23 @@ public class ClickGui extends Screen {
 
         height += 22;
         height += 4;
+
+        return height;
+    }
+
+    private int getPanelContentHeight(Panel panel) {
+        int height = 0;
+
+        for (Module module : ModuleManager.MODULES) {
+            if (module.getCategory() != panel.category) continue;
+            if (module.getName().equalsIgnoreCase("ClickGUI")) continue;
+
+            height += MODULE_HEIGHT;
+
+            if (moduleOpen.getOrDefault(module, false)) {
+                height += getSettingsHeight(module);
+            }
+        }
 
         return height;
     }
@@ -471,8 +587,9 @@ public class ClickGui extends Screen {
         private final Category category;
         private int x;
         private int y;
-        private final int width = 105;
+        private final int width = PANEL_WIDTH;
         private boolean open = false;
+        private int scroll = 0;
 
         private Panel(Category category, int x, int y) {
             this.category = category;

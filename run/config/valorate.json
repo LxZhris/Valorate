@@ -6,7 +6,7 @@
     "settings": {}
   },
   "Licht": {
-    "enabled": false,
+    "enabled": true,
     "key": 78,
     "visibleInArraylist": true,
     "settings": {}
@@ -37,7 +37,7 @@
     }
   },
   "Jesus": {
-    "enabled": true,
+    "enabled": false,
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
@@ -53,7 +53,7 @@
     "settings": {}
   },
   "Strafe": {
-    "enabled": true,
+    "enabled": false,
     "key": 86,
     "visibleInArraylist": true,
     "settings": {
@@ -67,22 +67,19 @@
     }
   },
   "Killaura": {
-    "enabled": false,
-    "key": 75,
+    "enabled": true,
+    "key": 67,
     "visibleInArraylist": true,
     "settings": {
-      "Players": true,
-      "Mobs": false,
-      "Animals": false,
-      "Range": 4.0,
-      "Through Walls": false,
+      "Range": 6.0,
+      "Through Walls": true,
       "F5 Rotation": "Off",
       "Target Mode": "Single",
       "Switch Delay": 3.0
     }
   },
   "NoFall": {
-    "enabled": true,
+    "enabled": false,
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
@@ -96,8 +93,8 @@
     "visibleInArraylist": true,
     "settings": {
       "Mode": "Packet",
-      "Range": 200.0,
-      "Overlay Opacity": 205.0,
+      "Range": 210.0,
+      "Overlay Opacity": 0.0,
       "Sneak Only": true,
       "Ignore Interact": true
     }

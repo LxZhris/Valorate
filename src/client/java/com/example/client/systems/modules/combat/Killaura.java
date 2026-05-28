@@ -2,17 +2,17 @@ package com.example.client.systems.modules.combat;
 
 import com.example.client.systems.modules.Category;
 import com.example.client.systems.modules.Module;
+import com.example.client.systems.settings.ButtonSetting;
 import com.example.client.systems.settings.BooleanSetting;
 import com.example.client.systems.settings.ModeSetting;
 import com.example.client.systems.settings.NumberSetting;
+import com.example.client.systems.targets.TargetManager;
+import com.example.client.systems.ui.TargetSelectionScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
-import net.minecraft.world.entity.animal.Animal;
-import net.minecraft.world.entity.monster.Monster;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -24,30 +24,20 @@ import java.util.List;
 public class Killaura extends Module {
     public static Killaura INSTANCE;
 
-    private final BooleanSetting attackPlayers = new BooleanSetting("Players", true);
-    private final BooleanSetting attackMobs = new BooleanSetting("Mobs", false);
-    private final BooleanSetting attackAnimals = new BooleanSetting("Animals", false);
-    private final NumberSetting range = new NumberSetting("Range", 4.0, 1.0, 6.0, 0.1);
-    private final BooleanSetting attackThroughWalls = new BooleanSetting("Through Walls", false);
-    private final ModeSetting f5RotationMode = new ModeSetting("F5 Rotation", "Off", "Off", "Client", "Server", "Silent");
+    private final ButtonSetting targets =
+            new ButtonSetting("Targets", "Select", () ->
+                    Minecraft.getInstance().setScreen(new TargetSelectionScreen())
+            );
 
-    private LivingEntity target;
-    private long lastAttackTick = -1L;
+    private final NumberSetting range =
+            new NumberSetting("Range", 4.0, 1.0, 6.0, 0.1);
 
-    public Killaura() {
-        super("Killaura", Category.COMBAT, false, "Automatically attacks nearby entities");
-        INSTANCE = this;
+    private final BooleanSetting attackThroughWalls =
+            new BooleanSetting("Through Walls", false);
 
-        addSetting(attackPlayers);
-        addSetting(attackMobs);
-        addSetting(attackAnimals);
-        addSetting(range);
-        addSetting(attackThroughWalls);
-        addSetting(f5RotationMode);
+    private final ModeSetting f5RotationMode =
+            new ModeSetting("F5 Rotation", "Off", "Off", "Client", "Server", "Silent");
 
-        addSetting(targetMode);
-        addSetting(switchDelay);
-    }
     private final ModeSetting targetMode =
             new ModeSetting("Target Mode", "Single", "Single", "Switch");
 
@@ -55,6 +45,22 @@ public class Killaura extends Module {
             (NumberSetting) new NumberSetting("Switch Delay", 3, 1, 10, 1)
                     .visibleWhen(() -> targetMode.get().equals("Switch"));
 
+    private LivingEntity target;
+    private long lastAttackTick = -1L;
+
+    public Killaura() {
+        super("Killaura", Category.COMBAT, false, "Automatically attacks selected nearby targets.");
+
+        INSTANCE = this;
+
+        addSetting(targets);
+
+        addSetting(range);
+        addSetting(attackThroughWalls);
+        addSetting(f5RotationMode);
+        addSetting(targetMode);
+        addSetting(switchDelay);
+    }
 
     @Override
     public void onTick() {
@@ -71,10 +77,7 @@ public class Killaura extends Module {
         }
 
         target = findTarget(mc);
-
-        if (target == null) {
-            return;
-        }
+        if (target == null) return;
 
         Vec3 playerEyePos = mc.player.getEyePosition(1.0F);
         Vec3 targetEyePos = target.getEyePosition(1.0F);
@@ -103,10 +106,7 @@ public class Killaura extends Module {
         }
 
         double attackSpeed = mc.player.getAttributeValue(Attributes.ATTACK_SPEED);
-
-        if (attackSpeed <= 0.0) {
-            attackSpeed = 1.0;
-        }
+        if (attackSpeed <= 0.0) attackSpeed = 1.0;
 
         int cooldownTicks = Math.max(1, (int) Math.ceil(20.0 / attackSpeed));
         long currentTick = mc.level.getGameTime();
@@ -133,25 +133,11 @@ public class Killaura extends Module {
                 LivingEntity.class,
                 mc.player.getBoundingBox().inflate(range.get()),
                 entity -> {
-                    if (entity == mc.player || entity.isDeadOrDying()) {
-                        return false;
-                    }
+                    if (entity == mc.player || entity.isDeadOrDying()) return false;
 
-                    if (entity instanceof Player && !attackPlayers.get()) {
-                        return false;
-                    }
+                    if (!TargetManager.isTarget(entity)) return false;
 
-                    if (entity instanceof Monster && !attackMobs.get()) {
-                        return false;
-                    }
-
-                    if (entity instanceof Animal && !attackAnimals.get()) {
-                        return false;
-                    }
-
-                    if (!attackThroughWalls.get() && !canSeeEntity(mc, entity)) {
-                        return false;
-                    }
+                    if (!attackThroughWalls.get() && !canSeeEntity(mc, entity)) return false;
 
                     return mc.player.distanceTo(entity) <= range.get();
                 }
@@ -192,7 +178,7 @@ public class Killaura extends Module {
 
         try {
             onGround = mc.player.onGround();
-        } catch (NoSuchMethodError | Exception e) {
+        } catch (Exception e) {
             onGround = true;
         }
 
@@ -211,9 +197,7 @@ public class Killaura extends Module {
                     }
                 }
 
-                if (ctor == null) {
-                    continue;
-                }
+                if (ctor == null) continue;
 
                 Object pktObj;
 
