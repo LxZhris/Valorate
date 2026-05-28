@@ -23,6 +23,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.system.MemoryStack;
 
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
@@ -168,6 +169,34 @@ public class ExampleModClient implements ClientModInitializer {
 
         ArraylistRenderer.render(extractor);
         NotificationRenderer.render(extractor);
+
+        if (ModuleManager.CROSSHAIR != null && ModuleManager.CROSSHAIR.isEnabled()) {
+            String s = "§l" + ModuleManager.CROSSHAIR.getSymbol();
+
+            int sw = client.getWindow().getGuiScaledWidth();
+            int sh = client.getWindow().getGuiScaledHeight();
+
+            int x = sw / 2 - client.font.width(s);
+            int y = sh / 2 - 8;
+
+            extractor.text(
+                    client.font,
+                    s,
+                    x,
+                    y,
+                    0xFFFF2222,
+                    ModuleManager.CROSSHAIR.hasShadow()
+            );
+
+            extractor.text(
+                    client.font,
+                    s,
+                    x + 1,
+                    y,
+                    0xFFFF2222,
+                    false
+            );
+        }
 
         if (!ModuleManager.HUD.isWatermark()) return;
 

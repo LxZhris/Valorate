@@ -15,6 +15,9 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.lwjgl.glfw.GLFW;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import java.lang.reflect.Method;
 
 import java.awt.Color;
 import java.util.HashMap;
@@ -107,10 +110,10 @@ public class ClickGui extends Screen {
 
         g.fill(panel.x, panel.y, panel.x + panel.width, panel.y + HEADER_HEIGHT, headerHovered ? 0xAAFFDD00 : headerColor);
 
-        renderCategoryIcon(g, client, panel.category, panel.x + 5, panel.y + 5);
+        renderCategoryIcon(g, client, panel.category, panel.x + 7, panel.y + 2);
 
         g.text(client.font, Component.literal(panel.category.name()).withStyle(ChatFormatting.YELLOW),
-                panel.x + 20, panel.y + 6, headerHovered ? 0xFF000000 : accent, false);
+                panel.x + 30, panel.y + 6, headerHovered ? 0xFF000000 : accent, false);
 
         g.text(client.font, Component.literal(panel.open ? "-" : "+"),
                 panel.x + panel.width - 12, panel.y + 6, headerHovered ? 0xFF000000 : accent, false);
@@ -197,20 +200,50 @@ public class ClickGui extends Screen {
     }
 
     private void renderCategoryIcon(GuiGraphicsExtractor g, Minecraft client, Category category, int x, int y) {
-        int color = switch (category.name().toLowerCase()) {
-            case "combat" -> 0xFFFF4444;
-            case "movement" -> 0xFF44FF66;
-            case "render" -> 0xFFAA44FF;
-            case "world" -> 0xFF44AAFF;
-            case "misc" -> 0xFFFFDD00;
-            default -> 0xFFFFFFFF;
+        ItemStack stack = switch (category.name().toLowerCase()) {
+            case "combat" -> new ItemStack(Items.DIAMOND_SWORD);
+            case "movement" -> new ItemStack(Items.FEATHER);
+            case "player" -> new ItemStack(Items.PLAYER_HEAD);
+            case "render" -> new ItemStack(Items.ENDER_EYE);
+            case "world" -> new ItemStack(Items.GRASS_BLOCK);
+            case "miscellaneous", "misc" -> new ItemStack(Items.COMPASS);
+            default -> new ItemStack(Items.BARRIER);
         };
 
-        g.fill(x, y, x + 10, y + 10, 0xFF111111);
-        g.fill(x + 2, y + 2, x + 8, y + 8, color);
+        renderItemStack(g, stack, x, y);
+    }
 
-        String letter = category.name().substring(0, 1);
-        g.text(client.font, Component.literal(letter), x + 3, y + 2, 0xFF000000, false);
+    private void renderItemStack(GuiGraphicsExtractor g, ItemStack stack, int x, int y) {
+        try {
+            for (Method method : g.getClass().getMethods()) {
+                String name = method.getName().toLowerCase();
+
+                if (!name.contains("item")) continue;
+
+                Class<?>[] params = method.getParameterTypes();
+
+                if (params.length == 3
+                        && params[0].isAssignableFrom(ItemStack.class)
+                        && params[1] == int.class
+                        && params[2] == int.class) {
+                    method.invoke(g, stack, x, y);
+                    return;
+                }
+
+                if (params.length == 4
+                        && params[0].isAssignableFrom(ItemStack.class)
+                        && params[1] == int.class
+                        && params[2] == int.class
+                        && params[3] == int.class) {
+                    method.invoke(g, stack, x, y, 0);
+                    return;
+                }
+            }
+        } catch (Exception ignored) {
+        }
+
+        g.fill(x, y, x + 10, y + 10, 0xFF111111);
+        g.fill(x + 2, y + 2, x + 8, y + 8, 0xFFFFDD00);
     }
 
     private void renderDescriptionTooltip(GuiGraphicsExtractor g, Minecraft client, int mouseX, int mouseY) {

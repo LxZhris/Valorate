@@ -26,6 +26,7 @@ public class ModuleManager {
     public static final NoFall NO_FALL = new NoFall();
     public static final ClickTP CLICK_TP = new ClickTP();
     public static final Notifications NOTIFICATIONS = new Notifications();
+    public static final Crosshair CROSSHAIR = new Crosshair();
 
     public static void init() {
         MODULES.clear();
@@ -43,6 +44,7 @@ public class ModuleManager {
         MODULES.add(NO_FALL);
         MODULES.add(CLICK_TP);
         MODULES.add(NOTIFICATIONS);
+        MODULES.add(CROSSHAIR);
     }
 
     public static Module getModuleByName(String name) {

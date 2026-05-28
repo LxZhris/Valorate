@@ -8,7 +8,7 @@
     }
   },
   "Licht": {
-    "enabled": true,
+    "enabled": false,
     "key": 78,
     "visibleInArraylist": true,
     "settings": {}
@@ -24,7 +24,7 @@
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
-      "Mode": "Safe"
+      "Mode": "Advanced"
     }
   },
   "Step": {
@@ -39,7 +39,7 @@
     }
   },
   "Jesus": {
-    "enabled": false,
+    "enabled": true,
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
@@ -69,17 +69,17 @@
     }
   },
   "TargetStrafe": {
-    "enabled": false,
+    "enabled": true,
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
-      "Speed": 0.12,
-      "Auto Jump": false,
-      "Jump Height": 0.42,
+      "Speed": 0.49,
+      "Auto Jump": true,
+      "Jump Height": 0.49,
       "Drag Back Mode": "Off",
       "YPort Height": 1.0,
       "Distance": 3.0,
-      "Direction": "Clockwise",
+      "Direction": "Counter-Clockwise",
       "Target Range": 10.0,
       "Change Direction on Stuck": true
     }
@@ -97,7 +97,7 @@
     }
   },
   "NoFall": {
-    "enabled": false,
+    "enabled": true,
     "key": 0,
     "visibleInArraylist": true,
     "settings": {
@@ -106,14 +106,14 @@
     }
   },
   "ClickTP": {
-    "enabled": true,
+    "enabled": false,
     "key": 90,
     "visibleInArraylist": true,
     "settings": {
       "Mode": "Packet",
-      "Range": 210.0,
+      "Range": 20.0,
       "Overlay Opacity": 0.0,
-      "Sneak Only": true,
+      "Sneak Only": false,
       "Ignore Interact": true
     }
   },
@@ -125,6 +125,15 @@
       "Duration": 2.0,
       "Max Amount": 3.0,
       "Sound": true
+    }
+  },
+  "Crosshair": {
+    "enabled": true,
+    "key": 0,
+    "visibleInArraylist": true,
+    "settings": {
+      "Symbol": "卐",
+      "Shadow": true
     }
   }
 }

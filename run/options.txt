@@ -25,7 +25,7 @@ maxFps:120
 improvedTransparency:false
 inactivityFpsLimit:"afk"
 mipmapLevels:4
-narrator:0
+narrator:3
 particles:0
 reducedDebugInfo:false
 renderClouds:"true"

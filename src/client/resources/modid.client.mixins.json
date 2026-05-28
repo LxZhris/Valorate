@@ -6,7 +6,8 @@
       "MinecraftClientMixin",
       "PlayerMixin",
       "XRayBlockMixin",
-      "ClickTPOutlineMixin"
+      "ClickTPOutlineMixin",
+      "CrosshairMixin"
     ],
 	"injectors": {
 		"defaultRequire": 1
