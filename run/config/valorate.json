@@ -3,7 +3,9 @@
     "enabled": true,
     "key": 0,
     "visibleInArraylist": false,
-    "settings": {}
+    "settings": {
+      "Theme": "Valorate"
+    }
   },
   "Licht": {
     "enabled": true,
@@ -64,6 +66,22 @@
       "Jump Height": 0.5,
       "Drag Back Mode": "Off",
       "YPort Height": 0.1
+    }
+  },
+  "TargetStrafe": {
+    "enabled": false,
+    "key": 0,
+    "visibleInArraylist": true,
+    "settings": {
+      "Speed": 0.12,
+      "Auto Jump": false,
+      "Jump Height": 0.42,
+      "Drag Back Mode": "Off",
+      "YPort Height": 1.0,
+      "Distance": 3.0,
+      "Direction": "Clockwise",
+      "Target Range": 10.0,
+      "Change Direction on Stuck": true
     }
   },
   "Killaura": {
