@@ -19,6 +19,7 @@ public class ModuleManager {
     public static final Sprint SPRINT = new Sprint();
     public static final Step STEP = new Step();
     public static final Strafe STRAFE = new Strafe();
+    public static final TargetStrafe TARGET_STRAFE = new TargetStrafe(); // Added TargetStrafe
     public static final Jesus JESUS = new Jesus();
     public static final xRay XRAY = new xRay();
     public static final Killaura KILLAURA = new Killaura();
@@ -37,6 +38,7 @@ public class ModuleManager {
         MODULES.add(JESUS);
         MODULES.add(XRAY);
         MODULES.add(STRAFE);
+        MODULES.add(TARGET_STRAFE); // Added TargetStrafe to the list
         MODULES.add(KILLAURA); // Add Killaura to the list
         MODULES.add(NO_FALL);
         MODULES.add(CLICK_TP);
