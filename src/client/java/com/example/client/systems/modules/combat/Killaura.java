@@ -20,6 +20,7 @@ import net.minecraft.world.phys.Vec3;
 import java.lang.reflect.Constructor;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects; // Import Objects for requireNonNull
 
 public class Killaura extends Module {
     public static Killaura INSTANCE;
@@ -34,6 +35,9 @@ public class Killaura extends Module {
 
     private final BooleanSetting attackThroughWalls =
             new BooleanSetting("Through Walls", false);
+
+    private final BooleanSetting rotate =
+            new BooleanSetting("Rotate", true); // New Rotate setting
 
     private final ModeSetting f5RotationMode =
             new ModeSetting("F5 Rotation", "Off", "Off", "Client", "Server", "Silent");
@@ -57,6 +61,7 @@ public class Killaura extends Module {
 
         addSetting(range);
         addSetting(attackThroughWalls);
+        addSetting(rotate); // Add new setting
         addSetting(f5RotationMode);
         addSetting(targetMode);
         addSetting(switchDelay);
@@ -76,33 +81,41 @@ public class Killaura extends Module {
             return;
         }
 
+        Objects.requireNonNull(mc.player); // Assert non-null after check
+        Objects.requireNonNull(mc.level); // Assert non-null after check
+
         target = findTarget(mc);
         if (target == null) return;
 
-        Vec3 playerEyePos = mc.player.getEyePosition(1.0F);
-        Vec3 targetEyePos = target.getEyePosition(1.0F);
+        float yaw = 0;
+        float pitch = 0;
 
-        double x = targetEyePos.x - playerEyePos.x;
-        double y = targetEyePos.y - playerEyePos.y;
-        double z = targetEyePos.z - playerEyePos.z;
+        if (rotate.get()) { // Only calculate and apply rotation if 'Rotate' is enabled
+            Vec3 playerEyePos = mc.player.getEyePosition(1.0F);
+            Vec3 targetEyePos = target.getEyePosition(1.0F);
 
-        double horizontalDistance = Math.sqrt(x * x + z * z);
+            double x = targetEyePos.x - playerEyePos.x;
+            double y = targetEyePos.y - playerEyePos.y;
+            double z = targetEyePos.z - playerEyePos.z;
 
-        float yaw = (float) Mth.wrapDegrees(Math.toDegrees(Math.atan2(z, x)) - 90.0F);
-        float pitch = (float) Mth.wrapDegrees(Math.toDegrees(-Math.atan2(y, horizontalDistance)));
+            double horizontalDistance = Math.sqrt(x * x + z * z);
 
-        String mode = f5RotationMode.get();
+            yaw = (float) Mth.wrapDegrees(Math.toDegrees(Math.atan2(z, x)) - 90.0F);
+            pitch = (float) Mth.wrapDegrees(Math.toDegrees(-Math.atan2(y, horizontalDistance)));
 
-        if ("Client".equals(mode)) {
-            mc.player.setYRot(yaw);
-            mc.player.setXRot(pitch);
-        } else if ("Server".equals(mode)) {
-            if (!sendRotationPacket(mc, yaw, pitch)) {
+            String mode = f5RotationMode.get();
+
+            if ("Client".equals(mode)) {
                 mc.player.setYRot(yaw);
                 mc.player.setXRot(pitch);
+            } else if ("Server".equals(mode)) {
+                if (!sendRotationPacket(mc, yaw, pitch)) {
+                    mc.player.setYRot(yaw);
+                    mc.player.setXRot(pitch);
+                }
+            } else if ("Silent".equals(mode)) {
+                sendRotationPacket(mc, yaw, pitch);
             }
-        } else if ("Silent".equals(mode)) {
-            sendRotationPacket(mc, yaw, pitch);
         }
 
         double attackSpeed = mc.player.getAttributeValue(Attributes.ATTACK_SPEED);
@@ -112,7 +125,8 @@ public class Killaura extends Module {
         long currentTick = mc.level.getGameTime();
 
         if (lastAttackTick < 0 || currentTick - lastAttackTick >= cooldownTicks) {
-            if ("Server".equals(mode) || "Silent".equals(mode)) {
+            if (rotate.get() && ("Server".equals(f5RotationMode.get()) || "Silent".equals(f5RotationMode.get()))) {
+                // Re-send rotation packet right before attack for server-side/silent modes if rotate is enabled
                 sendRotationPacket(mc, yaw, pitch);
             }
 
@@ -129,6 +143,9 @@ public class Killaura extends Module {
     }
 
     private LivingEntity findTarget(Minecraft mc) {
+        Objects.requireNonNull(mc.player); // Assert non-null after check
+        Objects.requireNonNull(mc.level); // Assert non-null after check
+
         List<LivingEntity> potentialTargets = mc.level.getEntitiesOfClass(
                 LivingEntity.class,
                 mc.player.getBoundingBox().inflate(range.get()),
@@ -149,6 +166,9 @@ public class Killaura extends Module {
     }
 
     private boolean canSeeEntity(Minecraft mc, LivingEntity entity) {
+        Objects.requireNonNull(mc.player); // Assert non-null after check
+        Objects.requireNonNull(mc.level); // Assert non-null after check
+
         Vec3 start = mc.player.getEyePosition(1.0F);
         Vec3 end = entity.getEyePosition(1.0F);
 
@@ -166,6 +186,9 @@ public class Killaura extends Module {
     }
 
     private boolean sendRotationPacket(Minecraft mc, float yaw, float pitch) {
+        Objects.requireNonNull(mc.player); // Assert non-null after check
+        Objects.requireNonNull(mc.getConnection()); // Assert non-null after check
+
         String[] candidates = new String[]{
                 "net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rot",
                 "net.minecraft.network.protocol.game.ServerboundMovePlayerPacket$Rotation",
